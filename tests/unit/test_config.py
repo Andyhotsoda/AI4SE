@@ -40,9 +40,11 @@ class TestConfigSchema:
         assert valid.hitl_timeout_seconds == 60
 
     def test_custom_working_directory(self):
-        """AgentConfig should accept custom working directory."""
+        """AgentConfig should resolve relative path to absolute."""
         config = AgentConfig(working_directory=".")
-        assert config.working_directory.endswith(".") or "Liuyihe" in config.working_directory
+        # "." should be resolved to an absolute path
+        assert os.path.isabs(config.working_directory)
+        assert config.working_directory != "."
 
     def test_config_equality(self):
         """Two default configs should be equal."""
