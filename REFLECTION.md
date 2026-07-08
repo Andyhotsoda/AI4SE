@@ -1,6 +1,6 @@
-# REFLECTION.md — 反思报告
+# 反思报告
 
-> 本文档由学生本人撰写，AI 辅助润色。记录在 AI4SE 期末项目中，使用 Superpowers 方法论构建 Coding Agent Harness 的完整反思。
+> 本文档由AI 辅助润色。
 
 ---
 
