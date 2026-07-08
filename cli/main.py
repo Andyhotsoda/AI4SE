@@ -92,6 +92,7 @@ async def _run_agent(
         project_store=project,
         max_iterations=max_iterations,
         max_consecutive_failures=5,
+        on_turn=_on_turn,
     )
 
     click.echo("=" * 60)
@@ -102,6 +103,18 @@ async def _run_agent(
     except KeyboardInterrupt:
         click.echo("\nInterrupted.")
         return session, project
+
+
+def _on_turn(turn):
+    """Callback: print agent output as it happens."""
+    if turn.natural_text:
+        click.echo(f"\n{turn.natural_text}")
+    for te in turn.tool_executions:
+        if te.allowed:
+            status = "[OK]" if te.result.success else "[FAIL]"
+            click.echo(f"  {status} {te.action.tool_name}: {te.result.output[:200]}")
+        else:
+            click.echo(f"  [BLOCKED] {te.action.tool_name}: {te.blocked_reason}")
 
 
 def _print_result(result):
@@ -161,6 +174,11 @@ def interactive(task: str | None, model: str, work_dir: str):
 @click.option("--port", "-p", default=8000, help="WebUI port.")
 def web(port: int):
     """Start the WebUI server."""
+    import sys, os
+    # Add project root to path so webui.py can be found
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
     import uvicorn
     from webui import app
     click.echo(f"WebUI starting at http://localhost:{port}")
