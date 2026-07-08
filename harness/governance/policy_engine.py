@@ -202,6 +202,17 @@ class PolicyEngine:
                     reason="Running in sandbox for safety.",
                 ),
                 PolicyRule(
+                    name="allow-warning-write",
+                    description="Allow file writes within project",
+                    priority=150,
+                    condition={
+                        "danger_level": "WARNING",
+                        "tool_name": "write_file",
+                    },
+                    verdict="ALLOW",
+                    reason="File writes within project scope are safe.",
+                ),
+                PolicyRule(
                     name="allow-safe",
                     description="Allow all safe operations",
                     priority=100,
