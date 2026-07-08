@@ -95,7 +95,7 @@ class TestActionInterceptor:
         assert result.allowed is False
         assert result.verdict == InterceptVerdict.DENY
         assert result.danger_level == DangerLevel.CRITICAL
-        assert "destroy" in result.reason.lower()
+        assert "blocked" in result.reason.lower() or "permanently" in result.reason.lower()
 
     async def test_dangerous_action_approved_by_human(self, project_dir, auto_approve_hitl):
         """Dangerous actions should be allowed if human approves."""
@@ -130,22 +130,21 @@ class TestActionInterceptor:
         assert result.allowed is False
         assert "Human denied" in result.reason
 
-    async def test_warning_shell_sandboxed(self, project_dir, auto_approve_hitl):
-        """Warning-level shell commands should be marked for sandbox."""
+    async def test_warning_shell_allowed(self, project_dir, auto_approve_hitl):
+        """Warning-level shell commands should auto-execute."""
         interceptor = ActionInterceptor(
             classifier=DangerClassifier(),
             policy=PolicyEngine.create_default_policy(),
             hitl=auto_approve_hitl,
             fence=ScopeFence(allowed_directories=[project_dir]),
-            sandbox=Sandbox(strategy="subprocess"),
+            sandbox=Sandbox(strategy="none"),
         )
 
         action = Action(tool_name="shell", parameters={"command": "git commit -m 'test'"})
         result = await interceptor.intercept(action)
 
         assert result.allowed is True
-        assert result.verdict == InterceptVerdict.SANDBOX
-        assert result.use_sandbox is True
+        assert result.use_sandbox is False  # WARNING auto-executes, no sandbox
 
     async def test_scope_fence_blocks_outside_path(self, project_dir, auto_approve_hitl):
         """Scope fence should block paths outside allowed directories."""
@@ -214,7 +213,7 @@ class TestActionInterceptor:
 
         action = Action(tool_name="read_file", parameters={"path": f"{project_dir}/main.py"})
         result = await interceptor.intercept(action)
-        assert result.matched_rule == "allow-safe"
+        assert result.matched_rule == "allow-safe-and-warning"
 
 
 class TestGuardrailInterceptMechanism:

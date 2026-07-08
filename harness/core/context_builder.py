@@ -13,23 +13,27 @@ from harness.memory.session_store import SessionStore
 from harness.memory.project_store import ProjectStore
 
 
-DEFAULT_SYSTEM_PROMPT = """You are a coding agent. You MUST respond ONLY with a single JSON action object — no explanations, no markdown, no code blocks.
+DEFAULT_SYSTEM_PROMPT = """You are a helpful coding assistant. You converse naturally with the user while executing coding tasks.
+
+When you need to perform an action (read/write files, run commands), embed a JSON tool call in your response:
+
+{"tool": "write_file", "path": "hello.py", "content": "print('Hello, World!')"}
 
 Available tools:
-- read_file: Read a file. Parameters: {"path": "path/to/file"}
-- write_file: Write content to a file. Parameters: {"path": "path/to/file", "content": "full file content"}
-- list_directory: List directory contents. Parameters: {"path": "path/to/dir"}
-- shell: Execute a shell command. Parameters: {"command": "the command"}
-- stop: Signal task completion. Parameters: {"reason": "why you're done"}
+- read_file: {"tool": "read_file", "path": "file.py"}
+- write_file: {"tool": "write_file", "path": "file.py", "content": "full content\\nwith newlines"}
+- list_directory: {"tool": "list_directory", "path": "."}
+- shell: {"tool": "shell", "command": "python hello.py"}
+- stop: {"tool": "stop", "reason": "done"}
 
-CRITICAL RULES:
-1. Respond with ONLY a JSON object like {"tool": "write_file", "path": "hello.py", "content": "print('hello')"}
-2. For write_file, put the ENTIRE file content in the "content" field as a single string. Use \\n for newlines.
-3. Do NOT wrap the JSON in markdown code blocks. Do NOT add any text before or after.
-4. After writing code, use shell to run it: {"tool": "shell", "command": "python hello.py"}
-5. When done, respond with: {"tool": "stop", "reason": "task complete"}
-
-SAFETY: Dangerous commands (rm -rf, sudo, etc.) will be blocked. Stay within the project directory.
+RULES:
+1. Talk naturally — explain what you're doing, then embed the JSON tool call.
+2. Put each JSON tool call on its own line, separate from your text.
+3. For write_file, put the ENTIRE file content as a single escaped string.
+4. After creating/modifying code, run it to verify.
+5. You can chain multiple actions in one response to complete a task efficiently.
+6. When the task is done, just say so without a tool call, or use the stop tool.
+7. Stay within the project directory. Dangerous commands (rm -rf, sudo) are blocked.
 """
 
 
@@ -51,12 +55,11 @@ class ContextBuilder:
         self._session_store = session_store
         self._project_store = project_store
 
-    def build(self, task: str, include_tools: bool = True) -> list[dict[str, str]]:
+    def build(self, include_tools: bool = True) -> list[dict[str, str]]:
         """
         Build the full messages list for the LLM completion call.
 
         Args:
-            task: The user's task description.
             include_tools: Whether to include tool descriptions.
 
         Returns:
@@ -80,10 +83,6 @@ class ContextBuilder:
         # 3. Conversation history
         if self._session_store:
             messages.extend(self._session_store.get_messages_for_llm())
-
-        # 4. Task (if this is the first turn)
-        if not self._session_store or self._session_store.turn_count == 0:
-            messages.append({"role": "user", "content": task})
 
         return messages
 

@@ -168,60 +168,35 @@ class PolicyEngine:
 
     @classmethod
     def create_default_policy(cls) -> "PolicyEngine":
-        """Create a PolicyEngine with sensible default rules."""
+        """Create a PolicyEngine: only DANGEROUS/CRITICAL trigger HITL."""
         return cls(
             rules=[
                 PolicyRule(
                     name="deny-critical",
-                    description="Never allow critical-level actions",
+                    description="Permanently block system-destroying actions",
                     priority=1000,
                     condition={"danger_level": "CRITICAL"},
                     verdict="DENY",
-                    reason="This action could destroy the system. It is permanently blocked.",
+                    reason="System-level destruction is permanently blocked.",
                 ),
                 PolicyRule(
-                    name="ask-dangerous-shell",
-                    description="Require human approval for dangerous shell commands",
+                    name="ask-dangerous",
+                    description="Require human approval for dangerous actions",
                     priority=500,
-                    condition={
-                        "danger_level": "DANGEROUS",
-                        "tool_name": "shell",
-                    },
+                    condition={"danger_level": "DANGEROUS"},
                     verdict="ASK",
-                    reason="Dangerous shell command requires human approval.",
+                    reason="Dangerous action requires human approval.",
                 ),
                 PolicyRule(
-                    name="sandbox-warning-shell",
-                    description="Run warning-level shell commands in sandbox",
-                    priority=200,
-                    condition={
-                        "danger_level": "WARNING",
-                        "tool_name": "shell",
-                    },
-                    verdict="SANDBOX",
-                    reason="Running in sandbox for safety.",
-                ),
-                PolicyRule(
-                    name="allow-warning-write",
-                    description="Allow file writes within project",
-                    priority=150,
-                    condition={
-                        "danger_level": "WARNING",
-                        "tool_name": "write_file",
-                    },
-                    verdict="ALLOW",
-                    reason="File writes within project scope are safe.",
-                ),
-                PolicyRule(
-                    name="allow-safe",
-                    description="Allow all safe operations",
+                    name="allow-safe-and-warning",
+                    description="Auto-execute safe and warning-level actions",
                     priority=100,
-                    condition={"danger_level": "SAFE"},
+                    condition={},
                     verdict="ALLOW",
-                    reason="Safe operations are always allowed.",
+                    reason="Auto-executing.",
                 ),
             ],
-            default_verdict="ASK",
+            default_verdict="ALLOW",
         )
 
     @classmethod

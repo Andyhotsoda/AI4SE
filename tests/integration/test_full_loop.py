@@ -20,9 +20,6 @@ from harness.governance.hitl import HITLStateMachine
 from harness.governance.scope_fence import ScopeFence
 from harness.governance.sandbox import Sandbox
 from harness.governance.action_interceptor import ActionInterceptor
-from harness.feedback.test_runner import SuiteRunner as TestRunner
-from harness.feedback.failure_classifier import FailureClassifier
-from harness.feedback.feedback_injector import FeedbackInjector
 from harness.memory.session_store import SessionStore
 from harness.memory.project_store import ProjectStore
 from harness.core.context_builder import ContextBuilder
@@ -71,10 +68,6 @@ def agent_factory(project_dir):
             project_store=project,
         )
 
-        # Feedback
-        test_runner = TestRunner(working_dir=project_dir)
-        feedback_injector = FeedbackInjector(FailureClassifier())
-
         # Agent
         agent = Agent(
             llm=MockLLMClient(responses=llm_responses),
@@ -82,8 +75,6 @@ def agent_factory(project_dir):
             interceptor=interceptor,
             sandbox=Sandbox(strategy="none"),
             context_builder=context,
-            test_runner=test_runner,
-            feedback_injector=feedback_injector,
             session_store=session,
             project_store=project,
             max_iterations=10,

@@ -23,26 +23,18 @@ class TestPolicyEngine:
         assert verdict.verdict == "DENY"
         assert verdict.matched_rule == "deny-critical"
 
-    def test_default_policy_asks_dangerous_shell(self):
-        """Dangerous shell commands should be ASK by default policy."""
+    def test_default_policy_asks_dangerous(self):
+        """Dangerous actions should be ASK by default policy."""
         action = Action(tool_name="shell", parameters={"command": "git push --force"})
         verdict = self.engine.evaluate(action, DangerLevel.DANGEROUS)
         assert verdict.verdict == "ASK"
-        assert verdict.matched_rule == "ask-dangerous-shell"
+        assert verdict.matched_rule == "ask-dangerous"
 
-    def test_default_policy_sandboxes_warning_shell(self):
-        """Warning-level shell commands should be SANDBOX by default policy."""
+    def test_default_policy_allows_warning(self):
+        """Warning-level actions should be ALLOWED (auto-execute)."""
         action = Action(tool_name="shell", parameters={"command": "git commit -m 'fix'"})
         verdict = self.engine.evaluate(action, DangerLevel.WARNING)
-        assert verdict.verdict == "SANDBOX"
-        assert verdict.matched_rule == "sandbox-warning-shell"
-
-    def test_default_policy_allows_safe(self):
-        """Safe actions should be ALLOWED by default policy."""
-        action = Action(tool_name="read_file", parameters={"path": "main.py"})
-        verdict = self.engine.evaluate(action, DangerLevel.SAFE)
         assert verdict.verdict == "ALLOW"
-        assert verdict.matched_rule == "allow-safe"
 
     def test_no_match_uses_default(self):
         """When no rule matches, use default verdict."""
@@ -169,7 +161,7 @@ class TestPolicyEngine:
         """Removing a rule should work."""
         engine = PolicyEngine.create_default_policy()
         original_count = len(engine.rules)
-        removed = engine.remove_rule("allow-safe")
+        removed = engine.remove_rule("ask-dangerous")
         assert removed is True
         assert len(engine.rules) == original_count - 1
 
