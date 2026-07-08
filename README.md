@@ -87,12 +87,26 @@ Run `harness setup-key` to securely store your Anthropic API key.
 # Build
 docker build -t coding-agent-harness .
 
-# Run tests
+# Run tests (no API key needed)
 docker run --rm coding-agent-harness python -m pytest tests/ -v
 
-# Run demos
+# Run demos (no API key needed)
 docker run --rm coding-agent-harness python demos/demo_guardrail_intercept.py
+
+# Run WebUI with DeepSeek API key
+docker run --rm -p 8000:8000 \
+  -e DEEPSEEK_API_KEY=sk-your-key-here \
+  -v $(pwd):/workspace \
+  coding-agent-harness
+
+# Or using an .env file
+docker run --rm -p 8000:8000 \
+  --env-file .env \
+  -v $(pwd):/workspace \
+  coding-agent-harness
 ```
+
+> **Note:** Docker containers don't have a system keyring backend. Pass your API key via the `DEEPSEEK_API_KEY` environment variable (or `ANTHROPIC_API_KEY` for Anthropic). The harness will automatically fall back to environment variables when keyring is unavailable.
 
 ## Configuration
 

@@ -172,16 +172,22 @@ def interactive(task: str | None, model: str, work_dir: str):
 
 @main.command()
 @click.option("--port", "-p", default=8000, help="WebUI port.")
-def web(port: int):
+@click.option("--dir", "-d", default=".", help="Project directory.")
+def web(port: int, dir: str):
     """Start the WebUI server."""
     import sys, os
-    # Add project root to path so webui.py can be found
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
     import uvicorn
     from webui import app
-    click.echo(f"WebUI starting at http://localhost:{port}")
+    # Set working directory
+    work_dir = os.path.abspath(dir)
+    os.environ["HARNESS_WORK_DIR"] = work_dir
+    import webui
+    webui.WORK_DIR = work_dir
+    click.echo(f"WebUI: http://localhost:{port}")
+    click.echo(f"Project: {work_dir}")
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
 
 

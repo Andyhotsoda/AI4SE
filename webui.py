@@ -5,11 +5,17 @@ DeepSeek-style dark theme with:
 - Left panel: chat conversation
 - Right panel: file preview
 - SSE streaming for real-time agent output
+
+Usage:
+    python webui.py                    # default: current directory
+    python webui.py --dir /path/to/project
+    python webui.py --port 8080 --dir ./myproject
 """
 
 from __future__ import annotations
 
 import asyncio
+import argparse
 import json
 import os
 import sys
@@ -44,8 +50,8 @@ from harness.core.action_parser import ActionParser
 
 app = FastAPI(title="Coding Agent Harness")
 
-# Working directory
-WORK_DIR = os.path.abspath(".")
+# Working directory — set via environment variable or CLI arg
+WORK_DIR = os.environ.get("HARNESS_WORK_DIR", os.path.abspath("."))
 
 # Global session state
 sessions: dict[str, tuple[SessionStore, ProjectStore]] = {}
@@ -421,11 +427,24 @@ async def _run_agent_streaming(agent: Agent, task: str, session: SessionStore):
 
 def main():
     """Start the WebUI server."""
+    parser = argparse.ArgumentParser(description="Coding Agent Harness WebUI")
+    parser.add_argument("--dir", "-d", default=".", help="Project directory to work in")
+    parser.add_argument("--port", "-p", type=int, default=8000, help="Server port")
+    parser.add_argument("--host", default="0.0.0.0", help="Server host")
+    args = parser.parse_args()
+
+    # Set working directory
+    work_dir = os.path.abspath(args.dir)
+    os.environ["HARNESS_WORK_DIR"] = work_dir
+    global WORK_DIR
+    WORK_DIR = work_dir
+
     print("=" * 60)
     print("Coding Agent Harness - WebUI")
-    print("Open http://localhost:8000 in your browser")
+    print(f"Project: {work_dir}")
+    print(f"Open http://localhost:{args.port} in your browser")
     print("=" * 60)
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(app, host=args.host, port=args.port, log_level="info")
 
 
 if __name__ == "__main__":
