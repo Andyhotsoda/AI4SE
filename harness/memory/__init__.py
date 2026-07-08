@@ -1,0 +1,1 @@
+"""Memory management: session history, project conventions, persistence."""

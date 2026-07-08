@@ -1,0 +1,1 @@
+"""Configuration: YAML loading, Pydantic schema, credential storage."""

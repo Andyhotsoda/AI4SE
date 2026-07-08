@@ -1,0 +1,1 @@
+"""Agent main loop: context → LLM → parse → dispatch → feedback → stop."""

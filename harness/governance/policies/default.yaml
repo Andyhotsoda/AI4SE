@@ -1,0 +1,58 @@
+# Default Safety Policy for Coding Agent Harness
+# This is a declarative policy file — rules are evaluated by the PolicyEngine.
+# The LLM has NO role in evaluating these rules.
+
+version: "1.0"
+name: "default"
+
+# Default verdict when no rule matches
+default_verdict: "ASK"
+
+rules:
+  # CRITICAL: Always deny
+  - name: "deny-critical"
+    description: "Never allow critical-level actions that could destroy the system"
+    priority: 1000
+    condition:
+      danger_level: "CRITICAL"
+    verdict: "DENY"
+    reason: "This action could destroy the system. It is permanently blocked."
+
+  # DANGEROUS shell commands: Ask for approval
+  - name: "ask-dangerous-shell"
+    description: "Require human approval for dangerous shell commands"
+    priority: 500
+    condition:
+      danger_level: "DANGEROUS"
+      tool_name: "shell"
+    verdict: "ASK"
+    reason: "Dangerous shell command requires human approval."
+
+  # DANGEROUS file writes: Ask for approval
+  - name: "ask-dangerous-write"
+    description: "Require human approval for dangerous file writes"
+    priority: 400
+    condition:
+      danger_level: "DANGEROUS"
+      tool_name: "write_file"
+    verdict: "ASK"
+    reason: "Dangerous file write requires human approval."
+
+  # WARNING: Run in sandbox
+  - name: "sandbox-warning-shell"
+    description: "Run warning-level shell commands in a sandbox"
+    priority: 200
+    condition:
+      danger_level: "WARNING"
+      tool_name: "shell"
+    verdict: "SANDBOX"
+    reason: "Running in sandbox for safety."
+
+  # SAFE: Always allow
+  - name: "allow-safe"
+    description: "Allow all safe operations without restriction"
+    priority: 100
+    condition:
+      danger_level: "SAFE"
+    verdict: "ALLOW"
+    reason: "Safe operations are always allowed."

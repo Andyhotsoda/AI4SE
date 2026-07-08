@@ -1,0 +1,33 @@
+# Default Harness Configuration
+# This file is loaded automatically if found in the project root.
+
+version: "1.0.0"
+
+agent:
+  max_iterations: 50
+  max_consecutive_failures: 5
+  working_directory: "."
+
+  governance:
+    enabled: true
+    default_verdict: "ASK"
+    hitl_timeout_seconds: 120
+    sandbox_strategy: "subprocess"
+    allowed_directories:
+      - "."
+    allowed_commands: []
+
+  tools:
+    shell_timeout_seconds: 30
+    max_file_size_bytes: 10485760  # 10 MB
+
+  memory:
+    store_path: ".harness/memory"
+    max_history_turns: 50
+    persist_across_sessions: true
+
+  llm:
+    provider: "anthropic"
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 4096
+    temperature: 0.3

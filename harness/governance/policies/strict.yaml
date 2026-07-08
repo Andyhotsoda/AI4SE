@@ -1,0 +1,41 @@
+# Strict Safety Policy
+# More restrictive than default — requires approval for WARNING level too.
+
+version: "1.0"
+name: "strict"
+
+# Default verdict when no rule matches
+default_verdict: "ASK"
+
+rules:
+  # CRITICAL: Always deny
+  - name: "deny-critical"
+    priority: 1000
+    condition:
+      danger_level: "CRITICAL"
+    verdict: "DENY"
+    reason: "This action could destroy the system. It is permanently blocked."
+
+  # DANGEROUS: Always deny (no HITL, just block)
+  - name: "deny-dangerous"
+    priority: 900
+    condition:
+      danger_level: "DANGEROUS"
+    verdict: "DENY"
+    reason: "Dangerous actions are blocked in strict mode."
+
+  # WARNING: Ask for approval
+  - name: "ask-warning"
+    priority: 500
+    condition:
+      danger_level: "WARNING"
+    verdict: "ASK"
+    reason: "Warning-level actions require human approval in strict mode."
+
+  # SAFE: Always allow
+  - name: "allow-safe"
+    priority: 100
+    condition:
+      danger_level: "SAFE"
+    verdict: "ALLOW"
+    reason: "Safe operations are always allowed."

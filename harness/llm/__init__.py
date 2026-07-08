@@ -1,0 +1,1 @@
+"""LLM abstraction layer with injectable mock client."""
