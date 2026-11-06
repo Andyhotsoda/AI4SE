@@ -1,3 +1,4 @@
+![CI](https://github.com/Andyhotsoda/AI4SE/actions/workflows/ci.yml/badge.svg)
 # Coding Agent Harness
 
 A Python-based Coding Agent Harness that wraps an LLM into a reliable, governed coding agent. Built as an **AI4SE Final Project (Type A: Coding Agent Harness)**.
